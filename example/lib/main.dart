@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_magnetometer/flutter_magnetometer.dart';
 
 void main() => runApp(MagnetometerExampleApp());
@@ -30,13 +29,12 @@ class _CompassPageState extends State<CompassPage> {
 
   StreamSubscription _magnetometerListener;
 
+  /// assign listener and start setting real data over [_magnetometerData]
   @override
   void initState() {
     super.initState();
-    print('Starting with data ${_magnetometerData.toStringDeep()}');
-    initPlatformState();
-
-    _magnetometerListener = FlutterMagnetometer.events.listen((MagnetometerData data) => _magnetometerData = data);
+    _magnetometerListener = FlutterMagnetometer.events
+        .listen((MagnetometerData data) => setState(() => _magnetometerData = data));
   }
 
   @override
@@ -45,47 +43,28 @@ class _CompassPageState extends State<CompassPage> {
     super.dispose();
   }
 
-  // Platform messages are asynchronous, so we initialize in an async method.
-  Future<void> initPlatformState() async {
-    MagnetometerData magnetometerData;
-    // Platform messages may fail, so we use a try/catch PlatformException.
-    try {
-      magnetometerData = await FlutterMagnetometer.getMagnetometerData();
-      print('New data ${magnetometerData.toStringDeep()}');
-    } on PlatformException catch (e) {
-      print(e);
-      magnetometerData = MagnetometerData(0.0, 0.0, 0.0);
-    }
-
-    // If the widget was removed from the tree while the asynchronous platform
-    // message was in flight, we want to discard the reply rather than calling
-    // setState to update our non-existent appearance.
-    if (!mounted) return;
-
-    setState(() => _magnetometerData = magnetometerData);
-  }
-
   @override
   Widget build(BuildContext context) {
+    final double atan2 = math.atan2(_magnetometerData.y, _magnetometerData.x);
     return Scaffold(
       appBar: AppBar(
         title: Text('Flutter Magnetometer Example'),
       ),
-      body: Column(
-        mainAxisSize: MainAxisSize.max,
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      body: ListView(
+        semanticChildCount: 3,
         children: <Widget>[
-          Text(_magnetometerData.toStringDeep()),
           Center(
             child: Padding(
               padding: EdgeInsets.all(16.0),
               child: Transform.rotate(
                 // calculate the direction we're heading in degrees, then convert to radian
-                angle: math.atan2(_magnetometerData.y, _magnetometerData.x) * 180 / math.pi,
+                angle: math.pi / 2 - atan2,
                 child: Image.asset('assets/compass.webp'),
               ),
             ),
           ),
+          Text('Raw microtesla values: \n: ${_magnetometerData.toStringDeep()}'),
+          Text('atan2 result:\n $atan2'),
         ],
       ),
     );

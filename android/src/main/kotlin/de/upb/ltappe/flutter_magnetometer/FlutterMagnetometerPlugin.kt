@@ -1,6 +1,5 @@
 package de.upb.ltappe.flutter_magnetometer
 
-import android.os.Bundle
 import android.content.Context
 import android.hardware.Sensor
 import android.hardware.SensorEvent
@@ -14,12 +13,16 @@ import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
 import io.flutter.plugin.common.PluginRegistry.Registrar
 
+/**
+ * Kotlin implementation for streaming Sensor.TYPE_MAGNETIC_FIELD values inside Dart code through
+ * platform messages
+ */
 class FlutterMagnetometerPlugin(context: Context) :
-        MethodCallHandler,
         EventChannel.StreamHandler,
         SensorEventListener {
 
-    var sensorManager: SensorManager? = null
+    private var sensorManager: SensorManager? = null
+    private var sensor: Sensor? = null
 
     private var latestData: MagnetometerData? = null
 
@@ -30,44 +33,26 @@ class FlutterMagnetometerPlugin(context: Context) :
     }
 
     companion object {
-        private val METHOD_CHANNEL = "flutter_magnetometer"
-        private val EVENTS_CHANNEL = "flutter_magnetometer/magnetometer-events"
+        private const val EVENTS_CHANNEL = "flutter_magnetometer/magnetometer-events"
 
         @JvmStatic
         fun registerWith(registrar: Registrar) {
             val instance = FlutterMagnetometerPlugin(registrar.context())
-
-
-            val mChannel = MethodChannel(registrar.messenger(), METHOD_CHANNEL)
-            mChannel.setMethodCallHandler(instance)
-
 
             val eChannel = EventChannel(registrar.messenger(), EVENTS_CHANNEL)
             eChannel.setStreamHandler(instance)
         }
     }
 
-    override fun onMethodCall(call: MethodCall, result: Result) {
-        if (call.method == "getMagnetometerData") {
-            if (latestData != null) {
-                result.success(latestData?.toMap());
-            } else {
-                result.success(MagnetometerData(0.0F, 0.0F, 0.0F).toMap())
-            }
-
-        }
-    }
-
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
-        println("Accuracy changed to ${accuracy.toString()}")
+        println("Accuracy changed to $accuracy")
     }
 
     override fun onSensorChanged(event: SensorEvent?) {
-        if (event != null) {
-            val newData: MagnetometerData = MagnetometerData(event.values[0], event.values[1], event.values[2])
-            latestData = newData;
-            eventSink?.success(newData.toMap())
-        }
+        println(with(event!!) { values.joinToString() })
+        val newData = MagnetometerData(event.values[0], event.values[1], event.values[2])
+        latestData = newData
+        eventSink?.success(newData.toMap())
     }
 
     override fun onListen(arguments: Any?, events: EventChannel.EventSink) {
@@ -76,18 +61,20 @@ class FlutterMagnetometerPlugin(context: Context) :
     }
 
     override fun onCancel(arguments: Any?) {
-        eventSink = null
         unregisterIfActive()
+        eventSink = null
     }
 
     // Lifecycle methods.
     private fun registerIfActive() {
         if (eventSink == null) return
-        val magneticFieldSensor: Sensor = sensorManager!!.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD)
+        sensor = sensorManager!!.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD)
+
+        println("sensor: ${sensor?.name}")
 
         // We could play around with samplingPeriodUs (3rd param) here for lower latency
         // e.g. SensorManger.SENSOR_DELAY_GAME
-        sensorManager!!.registerListener(this, magneticFieldSensor, SensorManager.SENSOR_DELAY_UI)
+        sensorManager!!.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL)
     }
 
     private fun unregisterIfActive() {
@@ -108,6 +95,6 @@ data class MagnetometerData(val x: Float, val y: Float, val z: Float) {
      * Representation of the class' attributes as typed Map object
      */
     fun toMap(): Map<String, Float> {
-        return mapOf<String, Float>("x" to x, "y" to y, "z" to z)
+        return mapOf("x" to x, "y" to y, "z" to z)
     }
 }
