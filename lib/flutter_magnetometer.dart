@@ -13,7 +13,7 @@ class FlutterMagnetometer {
   static final FlutterMagnetometer _instance = FlutterMagnetometer._();
 
   static const EventChannel _eChannel =
-      const EventChannel("flutter_magnetometer/magnetometer-events");
+      EventChannel("flutter_magnetometer/magnetometer-events");
 
   static Stream<MagnetometerData> _streamMagnetometer;
 
@@ -23,8 +23,10 @@ class FlutterMagnetometer {
   /// https://developer.android.com/images/axis_device.png
   static Stream<MagnetometerData> get events {
     if (_streamMagnetometer == null) {
-      _streamMagnetometer = _eChannel.receiveBroadcastStream().map<MagnetometerData>(
-          (data) => MagnetometerData.fromMap(json.decode(json.encode(data))));
+      _streamMagnetometer = _eChannel
+          .receiveBroadcastStream()
+          .map<MagnetometerData>((data) =>
+              MagnetometerData.fromMap(json.decode(json.encode(data))));
     }
     return _streamMagnetometer;
   }
