@@ -1,5 +1,13 @@
 # flutter_magnetometer
 
+## Supports Android only atm
+
+To start using this add `import 'package:flutter_magnetometer/flutter_magnetometer.dart';`to your imports section.
+
+Then you can simply listen to new events from the sensor via `FlutterMagnetometer.events.listen((MagnetometerData data) => doStuff(data));`.
+
+An example app with a compass and raw sensor data in the UI can be found in ther `example` folder.
+
 ## Getting Started
 
 For help getting started with Flutter, view our 

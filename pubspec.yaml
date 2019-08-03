@@ -2,7 +2,7 @@ name: flutter_magnetometer
 description: A Flutter plugin for getting the magnetometer data of your device along the x,y and z coordinates
 version: 0.0.1
 author: Leon Tappe <ltappe@mail.upb.de>
-homepage:
+homepage: https://git.uni-paderborn.de/ltappe/flutter_magnetometer
 
 environment:
   sdk: ">=2.1.0 <3.0.0"
