@@ -25,8 +25,8 @@ class FlutterMagnetometer {
     if (_streamMagnetometer == null) {
       _streamMagnetometer = _eChannel
           .receiveBroadcastStream()
-          .map<MagnetometerData>((data) =>
-              MagnetometerData.fromMap(json.decode(json.encode(data))));
+          .map<MagnetometerData>(
+              (dynamic data) => _listToMagnetometerData(data.cast<double>()));
     }
     return _streamMagnetometer;
   }
@@ -36,6 +36,9 @@ class FlutterMagnetometer {
   }
 
   FlutterMagnetometer._();
+
+  static MagnetometerData _listToMagnetometerData(List<double> list) =>
+      MagnetometerData(list[0], list[1], list[2]);
 }
 
 /// An object representing the data acquired from a magnetometer along the device's coordinate

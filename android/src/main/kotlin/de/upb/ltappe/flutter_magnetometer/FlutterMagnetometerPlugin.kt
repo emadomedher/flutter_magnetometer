@@ -20,8 +20,6 @@ class FlutterMagnetometerPlugin(context: Context) :
     private var sensorManager: SensorManager? = null
     private var sensor: Sensor? = null
 
-    private var latestData: MagnetometerData? = null
-
     private var eventSink: EventChannel.EventSink? = null
 
     init {
@@ -45,9 +43,8 @@ class FlutterMagnetometerPlugin(context: Context) :
     }
 
     override fun onSensorChanged(event: SensorEvent?) {
-        val newData = MagnetometerData(event!!.values[0], event.values[1], event.values[2])
-        latestData = newData
-        eventSink?.success(newData.toMap())
+        val values = listOf(event!!.values[0], event.values[1], event.values[2])
+        eventSink?.success(values)
     }
 
     override fun onListen(arguments: Any?, events: EventChannel.EventSink) {
@@ -73,21 +70,5 @@ class FlutterMagnetometerPlugin(context: Context) :
     private fun unregisterIfActive() {
         if (eventSink == null) return
         sensorManager!!.unregisterListener(this)
-    }
-}
-
-/**
- * An object representing the data acquired from a magnetometer along the device's coordinate
- * system.
- *
- * The attributes are stored as µT (microtesla).
- */
-data class MagnetometerData(val x: Float, val y: Float, val z: Float) {
-
-    /**
-     * Representation of the class' attributes as typed Map object
-     */
-    fun toMap(): Map<String, Float> {
-        return mapOf("x" to x, "y" to y, "z" to z)
     }
 }
