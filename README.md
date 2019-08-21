@@ -1,5 +1,7 @@
 # flutter_magnetometer
 
+###### FORKED FROM https://git.uni-paderborn.de/ltappe/flutter_magnetometer ###########
+
 ## Supports Android only atm
 
 To start using this add `import 'package:flutter_magnetometer/flutter_magnetometer.dart';`to your imports section.
